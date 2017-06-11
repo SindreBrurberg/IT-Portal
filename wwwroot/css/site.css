@@ -17,6 +17,37 @@ textarea {
     max-width: 280px;
 }
 
+.contact {
+    overflow: hidden;
+}
+
+.contactInfo {
+    float: left;
+    width: 33%;
+    border: 2px solid gray;
+    border-radius: 25px;
+    padding: 10px;
+    margin-left: 2px;
+    margin-bottom: 2px;
+}
+
+.info {
+    float: left;
+}
+
+h3.c {
+    margin-top: 10px;
+}
+
+h4.c {
+    font-size: 20px;
+}
+
+.c {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
 /* Carousel */
 .carousel-caption p {
     font-size: 20px;

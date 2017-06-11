@@ -2,7 +2,20 @@
     ViewData["Title"] = "Contact";
 }
 <h2>@ViewData["Title"].</h2>
-<h3>@ViewData["Message"]</h3>
+<pre>@ViewData["Message"]</pre>
+<div class="contact">
+@for (int i = 0; i < Int32.Parse(ViewBag.length.ToString()); i++) {
+    <div class="contactInfo">
+        <img src="~/images/Contact.png" height="100" width="100" class="info"/>
+        <div class="info">
+            <h3 class="c">@ViewBag.fullName[i]</h3>
+            <h4 class="c">@ViewBag.JobTitle[i]</h4>
+            <p class="c">@ViewBag.email[i]</p>
+            <p class="c">@ViewBag.workPhone[i]</p>
+        </div>
+    </div>
+}
+</div>
 
 <address>
     One Microsoft Way<br />
