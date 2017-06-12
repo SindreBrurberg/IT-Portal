@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -108,14 +109,26 @@ namespace IT_Portal.Controllers
                 }
                 pickturePaths[i] = (@"/images/contact/" + fullNames[i] + ".png");
             }
-
-            ViewBag.length = Files.Length;
-            ViewBag.email = emails;
-            ViewBag.workPhone = workPhones;
-            ViewBag.jobTitle = jobTitles;
-            ViewBag.pickture = pickturePaths;
-            ViewBag.fullName = fullNames;
-
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < Files.Length; i++) {
+                sb.AppendLine("<div class=\"gridInfo\">");
+                    sb.AppendLine("<img src=\""+ pickturePaths[i] +"\" height=\"100\" width=\"100\" class=\"info\"/>");
+                    sb.AppendLine("<div class=\"info\">");
+                        sb.AppendLine("<h3 class=\"c\">"+ fullNames[i] +"</h3>");
+                        sb.AppendLine("<h4 class=\"c\">"+ jobTitles[i] +"</h4>");
+                        sb.AppendLine("<p class=\"c\">"+ emails[i] +"</p>");
+                        sb.AppendLine("<p class=\"c\">"+ workPhones[i] +"</p>");
+                    sb.AppendLine("</div>");
+                sb.AppendLine("</div>");
+            }
+            Console.WriteLine(sb.ToString());
+            ViewBag.Message = sb.ToString();
+            // ViewBag.length = Files.Length;
+            // ViewBag.email = emails;
+            // ViewBag.workPhone = workPhones;
+            // ViewBag.jobTitle = jobTitles;
+            // ViewBag.pickture = pickturePaths;
+            // ViewBag.fullName = fullNames;
             return View();
         }
 
