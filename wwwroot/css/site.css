@@ -17,18 +17,27 @@ textarea {
     max-width: 280px;
 }
 
-.contact {
-    overflow: hidden;
+.grid {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
-.contactInfo {
-    float: left;
-    width: 33%;
-    border: 2px solid gray;
-    border-radius: 25px;
-    padding: 10px;
-    margin-left: 2px;
-    margin-bottom: 2px;
+.gridInfo {
+  color: #333;
+  margin: 0 .3em 1em;
+  padding: .5em;
+  width: 300px;
+  transition: background-color .3s;
+}
+
+.gridInfo img {
+    border-radius: 100%;
+    margin-right: 1em;
+    box-shadow: 2px 3px 5px rgba(0, 0, 0, .5);
 }
 
 .info {

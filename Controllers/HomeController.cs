@@ -5,14 +5,22 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Hosting;
+
 
 namespace IT_Portal.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
+
+        public HomeController(IHostingEnvironment hostingEnvironment)
+        {
+            _hostingEnvironment = hostingEnvironment;
+        }
         private string getConfigInfo(string configItem){
             string confInfo = "";
-            string configFile = System.IO.File.ReadAllText("C:\\Users\\Sindre\\C#\\IT-Portal\\config.cfg");
+            string configFile = System.IO.File.ReadAllText("C:\\Users\\deths\\C#\\IT-Portal\\config.cfg");
             foreach (string line in configFile.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)) {
                 if (line.Trim().StartsWith(configItem + ":")) {
                     confInfo = line.Substring(line.IndexOf(configItem + ":") + configItem.Length + 1).Replace("\"", "").Trim();
@@ -34,16 +42,15 @@ namespace IT_Portal.Controllers
 
         public IActionResult Contact()
         {
-            Console.WriteLine(getConfigInfo("contact"));
             DirectoryInfo d = new DirectoryInfo(@getConfigInfo("contact"));
             FileInfo[] Files = d.GetFiles("*.contact");
 
-            string[] email = new string[Files.Length];
-            string[] workPhone = new string[Files.Length];
-            string[] jobTitle = new string[Files.Length];
-            string[] pickture = new string[Files.Length];
-            string[] fullName = new string[Files.Length];
-            string[] Message = new string[Files.Length];
+            string[] emails = new string[Files.Length];
+            string[] workPhones = new string[Files.Length];
+            string[] jobTitles = new string[Files.Length];
+            string[] picktures = new string[Files.Length];
+            string[] fullNames = new string[Files.Length];
+            string[] Messages = new string[Files.Length];
             for (int i = 0; i < Files.Length; i++) {
                 FileInfo fileName = Files[i];
                 string file = System.IO.File.ReadAllText(getConfigInfo("contact") + fileName);
@@ -65,34 +72,49 @@ namespace IT_Portal.Controllers
                 } catch (Exception e){
                     Console.WriteLine(e);
                 } try {
-                    email[i] = doc.Root.Element("EmailAddressCollection").Element("EmailAddress").Element("Address").Value;
+                    emails[i] = doc.Root.Element("EmailAddressCollection").Element("EmailAddress").Element("Address").Value;
                 } catch (Exception e){
                     Console.WriteLine(e);
                 } try {
-                    workPhone[i] = doc.Root.Element("PhoneNumberCollection").Element("PhoneNumber").Element("Number").Value;
+                    workPhones[i] = doc.Root.Element("PhoneNumberCollection").Element("PhoneNumber").Element("Number").Value;
                 } catch (Exception e){
                     Console.WriteLine(e);
                 } try {
-                    jobTitle[i] = doc.Root.Element("PositionCollection").Element("Position").Element("JobTitle").Value;
+                    jobTitles[i] = doc.Root.Element("PositionCollection").Element("Position").Element("JobTitle").Value;
                 } catch (Exception e){
                     Console.WriteLine(e);
                 } try {
-                    pickture[i] = doc.Root.Element("PhotoCollection").Element("Photo").Element("Url").Value;
+                    picktures[i] = doc.Root.Element("PhotoCollection").Element("Photo").Element("Url").Value;
                 } catch (Exception e){
                     Console.WriteLine(e);
                 } try {
-                    fullName[i] = (last + ", " + first + " " + middle);
+                    fullNames[i] = (last + ", " + first + " " + middle);
                 } catch (Exception e){
                     Console.WriteLine(e);
                 }
             }
+            string[] pickturePaths  = new string[Files.Length];
+            if (!System.IO.File.Exists(_hostingEnvironment.WebRootPath + @"\images\contact")) {
+                System.IO.Directory.CreateDirectory(_hostingEnvironment.WebRootPath + @"\images\contact");
+            }
+            for (int i = 0; i < Files.Length; i++) {
+                pickturePaths[i] = (_hostingEnvironment.WebRootPath + @"\images\contact\" + fullNames[i] + ".png");
+                if (!System.IO.File.Exists(pickturePaths[i])) {
+                    if (!System.IO.File.Exists(picktures[i])) {
+                        System.Console.WriteLine("Path doesn't exist: {0}", picktures[i]);
+                    } else {
+                        System.IO.File.Copy(@picktures[i], @pickturePaths[i]);
+                    }
+                }
+                pickturePaths[i] = (@"/images/contact/" + fullNames[i] + ".png");
+            }
 
             ViewBag.length = Files.Length;
-            ViewBag.email = email;
-            ViewBag.workPhone = workPhone;
-            ViewBag.jobTitle = jobTitle;
-            ViewBag.pickture = pickture;
-            ViewBag.fullName = fullName;
+            ViewBag.email = emails;
+            ViewBag.workPhone = workPhones;
+            ViewBag.jobTitle = jobTitles;
+            ViewBag.pickture = pickturePaths;
+            ViewBag.fullName = fullNames;
 
             return View();
         }
