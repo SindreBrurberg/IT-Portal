@@ -20,10 +20,12 @@ textarea {
 .grid {
   display: -webkit-flex;
   display: flex;
-  -webkit-justify-content: space-between;
-  justify-content: space-between;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
   -webkit-flex-wrap: wrap;
   flex-wrap: wrap;
+  margin-top: 20px;
+  margin-bottom: 45px;
 }
 
 .gridInfo {
@@ -38,6 +40,29 @@ textarea {
     border-radius: 100%;
     margin-right: 1em;
     box-shadow: 2px 3px 5px rgba(0, 0, 0, .5);
+}
+
+.folderButton, .fileButton {
+    background: none;
+    border: none;
+    color: gray;
+    font-weight: bold;
+    font-size: 20px;
+    padding: 5px 15px;
+    border-radius: 25px;
+    transition: background .15s;
+    margin-right: 15px;
+}
+
+.folderButton:hover, .fileButton:hover {
+    background-color: #eee;
+    color: #333;
+}
+
+.folderButton > img, .fileButton > img{
+    margin-right: 10px;
+    height: 40px;
+    width: auto;
 }
 
 .info {

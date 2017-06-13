@@ -4,11 +4,14 @@
 <h2>@ViewData["Title"].</h2>
 <div class="grid">
     @if (ViewBag.LastFolder == "Root") {
-        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="">@ViewBag.LastFolder</a>
+        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id=""><button class="folderButton up"><img src="/images/folderCloase.png"/>@ViewBag.LastFolder</button></a>
     }else if (ViewBag.LastFolder != "") {
-        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="@ViewBag.LastFolder">@ViewBag.LastFolder</a>
+        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="@ViewBag.LastFolder"><button class="folderButton up"><img src="/images/folderCloase.png"/>@ViewBag.LastFolder</button></a>
     }
-    @foreach (string folder in ViewBag.Folders) {
-        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="@folder">@folder</a>
+    @for (int i = 0; i < ViewBag.Length; i++) {
+        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="@ViewBag.Folders[i]"><button class="folderButton down"><img src="/images/folderOpen.png"/>@ViewBag.FolderNames[i]</button></a>
     }
+</div>
+<div class="grid">
+    @Html.Raw(ViewBag.Files)
 </div>

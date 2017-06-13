@@ -50,9 +50,11 @@ namespace IT_Portal.Controllers
             //System.IO.Directory.GetDirectories(@configInfor,"*", System.IO.SearchOption.AllDirectories)
             string[] directories = Directory.GetDirectories(@configInfor + "\\" + id);
             string[] subFolders = new string[directories.Length];
+            string[] subFolderNames = new string[directories.Length];
             StringBuilder html = new StringBuilder();
             for (int i = 0; i < directories.Length; i++) { 
                 subFolders[i] = directories[i].Replace(configInfor + "\\","");
+                subFolderNames[i] = directories[i].Replace(configInfor + "\\","").Replace(id != null ? id + "\\" : " ", "");
             }
             string lastFolder;
             if (id == null) {
@@ -62,18 +64,39 @@ namespace IT_Portal.Controllers
             }else {
                 lastFolder = id.Remove(id.LastIndexOf('\\'));
             }
+            foreach (FileInfo file in Files) { 
+                string destDir = _hostingEnvironment.WebRootPath + @"\HowTo" + file.Directory.ToString().Replace(configInfor.Remove(configInfor.Length -1), "");
+                if (!Directory.Exists(destDir)) {
+                    Directory.CreateDirectory(destDir);
+                }
+                FileInfo destFile = new FileInfo(Path.Combine(destDir, file.Name));
+                if (destFile.Exists)
+                {
+                    if (file.LastWriteTime > destFile.LastWriteTime)
+                    { 
+                        // now you can safely overwrite it
+                        file.CopyTo(destFile.FullName, true);
+                    }
+                } else {
+                    file.CopyTo(destFile.FullName);
+                }
+            }
             ViewBag.LastFolder = lastFolder;
             ViewBag.Folders = subFolders;
+            ViewBag.FolderNames = subFolderNames;
+            ViewBag.Length = subFolders.Length;
             for (int i = 0; i < Files.Length; i++) { 
-                //html.AppendLine("<li><a asp-area=\"\" asp-controller=\"Home\" asp-action=\"HowTo\">How to</a></li>");
+                html.AppendLine("<a href=\"/HowTo" + Files[i].FullName.Replace(configInfor.Remove(configInfor.Length -1), "").Replace("\\", "/") + "\" class=\"file\" target=\"_blank\"><button class=\"fileButton\"><img src=\"/images/pdf.png\"/>" + Files[i].Name.Remove(Files[i].Name.Length -4) + "</button></a>");
+                //html.AppendLine("<li><a asp-area=\"\" asp-controller=\"Home\" asp-action=\"HowTo\">How to</a></li>"); 
                 //html.AppendLine("<li><a herf=/" + directori.Replace(configInfor + "\\","") + "><button>" + directori.Replace(configInfor + "\\","") + "</button></a></li>");
             }
+            ViewBag.Files = html.ToString();
             return View();
         }
 
         public IActionResult Contact()
         {
-            String configInfor = getConfigInfo("contact");
+            string configInfor = getConfigInfo("contact");
             DirectoryInfo d = new DirectoryInfo(@configInfor);
             FileInfo[] Files = d.GetFiles("*.contact");
 
@@ -152,7 +175,6 @@ namespace IT_Portal.Controllers
                     sb.AppendLine("</div>");
                 sb.AppendLine("</div>");
             }
-            Console.WriteLine(sb.ToString());
             ViewBag.Message = sb.ToString();
             // ViewBag.length = Files.Length;
             // ViewBag.email = emails;
