@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "How to";
+}
+<h2>@ViewData["Title"].</h2>
+<div class="grid">
+    @if (ViewBag.LastFolder == "Root") {
+        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="">@ViewBag.LastFolder</a>
+    }else if (ViewBag.LastFolder != "") {
+        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="@ViewBag.LastFolder">@ViewBag.LastFolder</a>
+    }
+    @foreach (string folder in ViewBag.Folders) {
+        <a asp-area="" asp-controller="Home" asp-action="HowTo" asp-route-id="@folder">@folder</a>
+    }
+</div>

@@ -21,7 +21,7 @@ namespace IT_Portal.Controllers
         }
         private string getConfigInfo(string configItem){
             string confInfo = "";
-            string configFile = System.IO.File.ReadAllText("C:\\Users\\deths\\C#\\IT-Portal\\config.cfg");
+            string configFile = System.IO.File.ReadAllText(_hostingEnvironment.ContentRootPath + @"\config.cfg");
             foreach (string line in configFile.Split(new string[] { Environment.NewLine }, StringSplitOptions.None)) {
                 if (line.Trim().StartsWith(configItem + ":")) {
                     confInfo = line.Substring(line.IndexOf(configItem + ":") + configItem.Length + 1).Replace("\"", "").Trim();
@@ -41,9 +41,40 @@ namespace IT_Portal.Controllers
             return View();
         }
 
+        [HttpGet]
+        public IActionResult HowTo(string id)
+        {
+            string configInfor = getConfigInfo("howto");
+            DirectoryInfo d = new DirectoryInfo(@configInfor + "\\" + id);
+            FileInfo[] Files = d.GetFiles("*.PDF");
+            //System.IO.Directory.GetDirectories(@configInfor,"*", System.IO.SearchOption.AllDirectories)
+            string[] directories = Directory.GetDirectories(@configInfor + "\\" + id);
+            string[] subFolders = new string[directories.Length];
+            StringBuilder html = new StringBuilder();
+            for (int i = 0; i < directories.Length; i++) { 
+                subFolders[i] = directories[i].Replace(configInfor + "\\","");
+            }
+            string lastFolder;
+            if (id == null) {
+                lastFolder = "";
+            }else if (id.LastIndexOf('\\') == -1) {
+                lastFolder = "Root";
+            }else {
+                lastFolder = id.Remove(id.LastIndexOf('\\'));
+            }
+            ViewBag.LastFolder = lastFolder;
+            ViewBag.Folders = subFolders;
+            for (int i = 0; i < Files.Length; i++) { 
+                //html.AppendLine("<li><a asp-area=\"\" asp-controller=\"Home\" asp-action=\"HowTo\">How to</a></li>");
+                //html.AppendLine("<li><a herf=/" + directori.Replace(configInfor + "\\","") + "><button>" + directori.Replace(configInfor + "\\","") + "</button></a></li>");
+            }
+            return View();
+        }
+
         public IActionResult Contact()
         {
-            DirectoryInfo d = new DirectoryInfo(@getConfigInfo("contact"));
+            String configInfor = getConfigInfo("contact");
+            DirectoryInfo d = new DirectoryInfo(@configInfor);
             FileInfo[] Files = d.GetFiles("*.contact");
 
             string[] emails = new string[Files.Length];
@@ -54,7 +85,7 @@ namespace IT_Portal.Controllers
             string[] Messages = new string[Files.Length];
             for (int i = 0; i < Files.Length; i++) {
                 FileInfo fileName = Files[i];
-                string file = System.IO.File.ReadAllText(getConfigInfo("contact") + fileName);
+                string file = System.IO.File.ReadAllText(configInfor + fileName);
                 XDocument doc = XDocument.Parse(file.Replace("c:", ""));
 
                 string last ="";
