@@ -3,7 +3,17 @@
 }
 <h2>@ViewData["Title"].</h2>
 <div class="grid">
-    @Html.Raw(ViewBag.Message)
+    @for (int i = 0; i < Int32.Parse(ViewBag.length.ToString()); i++) {
+        <div class="gridInfo">
+          <div style="background-image: url('@ViewBag.pickture[i]');" class="info image"></div>
+          <div class="info">
+              <h3 class="c">@ViewBag.fullName[i]</h3>
+              <h4 class="c">@ViewBag.JobTitle[i]</h4>
+             <p class="c">@ViewBag.email[i]</p>
+             <p class="c">@ViewBag.workPhone[i]</p>
+         </div>
+     </div>
+    }
 </div>
 
 <address>

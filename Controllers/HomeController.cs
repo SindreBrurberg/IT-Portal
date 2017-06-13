@@ -93,6 +93,16 @@ namespace IT_Portal.Controllers
             ViewBag.Files = html.ToString();
             return View();
         }
+        private string getFieldData(string path, string collection, string container, string ellement) {
+            XDocument doc = XDocument.Parse(path.Replace("c:", ""));
+            string value = "";
+            try {
+                value = doc.Root.Element(collection).Element(container).Element(ellement).Value;
+            } catch (Exception e){
+                Console.WriteLine(e);
+            }
+            return value;
+        }
 
         public IActionResult Contact()
         {
@@ -109,44 +119,18 @@ namespace IT_Portal.Controllers
             for (int i = 0; i < Files.Length; i++) {
                 FileInfo fileName = Files[i];
                 string file = System.IO.File.ReadAllText(configInfor + fileName);
-                XDocument doc = XDocument.Parse(file.Replace("c:", ""));
 
                 string last ="";
                 string middle ="";
                 string first ="";
-                try {
-                    last = doc.Root.Element("NameCollection").Element("Name").Element("FamilyName").Value;
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                } try {
-                    middle = doc.Root.Element("NameCollection").Element("Name").Element("MiddleName").Value;
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                } try {
-                    first = doc.Root.Element("NameCollection").Element("Name").Element("GivenName").Value;
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                } try {
-                    emails[i] = doc.Root.Element("EmailAddressCollection").Element("EmailAddress").Element("Address").Value;
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                } try {
-                    workPhones[i] = doc.Root.Element("PhoneNumberCollection").Element("PhoneNumber").Element("Number").Value;
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                } try {
-                    jobTitles[i] = doc.Root.Element("PositionCollection").Element("Position").Element("JobTitle").Value;
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                } try {
-                    picktures[i] = doc.Root.Element("PhotoCollection").Element("Photo").Element("Url").Value;
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                } try {
-                    fullNames[i] = (last + ", " + first + " " + middle);
-                } catch (Exception e){
-                    Console.WriteLine(e);
-                }
+                last = getFieldData(file,"NameCollection","Name","FamilyName");
+                middle = getFieldData(file,"NameCollection","Name","MiddleName");
+                first = getFieldData(file,"NameCollection","Name","GivenName");
+                emails[i] = getFieldData(file,"EmailAddressCollection","EmailAddress","Address");
+                workPhones[i] = getFieldData(file,"PhoneNumberCollection","PhoneNumber","Number");
+                jobTitles[i] = getFieldData(file,"PositionCollection","Position","JobTitle");
+                picktures[i] = getFieldData(file,"PhotoCollection","Photo","Url");
+                fullNames[i] = (last + ", " + first + " " + middle);
             }
             string[] pickturePaths  = new string[Files.Length];
             if (!System.IO.File.Exists(_hostingEnvironment.WebRootPath + @"\images\contact")) {
@@ -163,10 +147,10 @@ namespace IT_Portal.Controllers
                 }
                 pickturePaths[i] = (@"/images/contact/" + fullNames[i] + ".png");
             }
-            StringBuilder sb = new StringBuilder();
+            /*StringBuilder sb = new StringBuilder();
             for (int i = 0; i < Files.Length; i++) {
                 sb.AppendLine("<div class=\"gridInfo\">");
-                    sb.AppendLine("<img src=\""+ pickturePaths[i] +"\" height=\"100\" width=\"100\" class=\"info\"/>");
+                    sb.AppendLine("<img src=\""+ pickturePaths[i] +"\" class=\"info\"/>");
                     sb.AppendLine("<div class=\"info\">");
                         sb.AppendLine("<h3 class=\"c\">"+ fullNames[i] +"</h3>");
                         sb.AppendLine("<h4 class=\"c\">"+ jobTitles[i] +"</h4>");
@@ -175,13 +159,13 @@ namespace IT_Portal.Controllers
                     sb.AppendLine("</div>");
                 sb.AppendLine("</div>");
             }
-            ViewBag.Message = sb.ToString();
-            // ViewBag.length = Files.Length;
-            // ViewBag.email = emails;
-            // ViewBag.workPhone = workPhones;
-            // ViewBag.jobTitle = jobTitles;
-            // ViewBag.pickture = pickturePaths;
-            // ViewBag.fullName = fullNames;
+            ViewBag.Message = sb.ToString();*/
+            ViewBag.length = Files.Length;
+            ViewBag.email = emails;
+            ViewBag.workPhone = workPhones;
+            ViewBag.jobTitle = jobTitles;
+            ViewBag.pickture = pickturePaths;
+            ViewBag.fullName = fullNames;
             return View();
         }
 
