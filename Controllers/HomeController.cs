@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Hosting;
+using Novell.Directory.Ldap;
 
 
 namespace IT_Portal.Controllers
@@ -18,6 +19,93 @@ namespace IT_Portal.Controllers
         public HomeController(IHostingEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
+        }
+        
+        public static string Host { get; private set; }
+        public static string BindDN { get; private set; }
+        public static string BindPassword { get; private set; }
+        public static int Port { get; private set; }
+        public static string BaseDC { get; private set; }
+        public static string CookieName { get; private set; }
+        public static bool Validate(string username, string password)
+        {
+            Host = "ksudc10.ks.mil.no";
+            BindDN = "CN=Sindre Bruberg Admin,OU=Admin-Brukere";
+            BindPassword = "Pass!000";
+            Port = 389;
+            BaseDC = "DC=ks,DC=mil,DC=no";
+            try
+            {
+                using (var conn = new LdapConnection() )
+                {
+                    conn.Connect(Host, Port);
+                    conn.Bind($"{BindDN},{BaseDC}", BindPassword);
+                    var entities =
+                        conn.Search(BaseDC,LdapConnection.SCOPE_SUB,
+                            $"(sAMAccountName={username})",
+                            new string[] { "sAMAccountName" }, false);
+                    string userDn = null;
+                    while (entities.hasMore())
+                    {
+                        var entity = entities.next();
+                        var account = entity.getAttribute("sAMAccountName");
+                        //If you need to Case insensitive, please modify the below code.
+                        if (account != null && account.StringValue == username)
+                        {
+                            userDn = entity.DN;
+                            break;
+                        }
+                    }
+                    if (string.IsNullOrWhiteSpace(userDn)) return false;
+                    conn.Bind(userDn, password);
+                    // LdapAttribute passwordAttr = new LdapAttribute("userPassword", password);
+                    // var compareResult = conn.Compare(userDn, passwordAttr);
+                    conn.Disconnect();
+                    return true;
+                }
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
+        private static string VerifyUser(string username, string password) {
+            string searchBase = "ou=KSU,dc=KS,dc=mil,dc=no";
+            int searchScope = LdapConnection.SCOPE_SUB; 
+            string searchFilter = "(sAMAccountName="+ username +")";
+            LdapConnection ldapConn= new LdapConnection();
+            ldapConn.Connect("ks.mil.no",389);
+            ldapConn.Bind("ks\\" + username,password);
+            Console.WriteLine(ldapConn.Connected);
+            string[] attr = {"sAMAccountName", "mail", "displayName", "department", "userPrincipalName", "description", "title"};
+            LdapSearchQueue queue=ldapConn.Search (searchBase,searchScope, searchFilter, attr,false,(LdapSearchQueue)null,(LdapSearchConstraints)null );
+            LdapMessage message;
+            StringBuilder sb = new StringBuilder();
+            while ((message = queue.getResponse()) !=null)
+            { 
+                if (message is LdapSearchResult)
+                {
+                    LdapEntry entry = ((LdapSearchResult) message).Entry;
+                    // System.Console.Out.WriteLine("\n" + entry.DN);
+                    // System.Console.Out.WriteLine("\tAttributes: ");
+                    LdapAttributeSet attributeSet =  entry.getAttributeSet();
+                    System.Collections.IEnumerator ienum = attributeSet.GetEnumerator();
+                    while(ienum.MoveNext())
+                    {
+                    LdapAttribute attribute=(LdapAttribute)ienum.Current;
+                    string attributeName = attribute.Name;
+                    string attributeVal = attribute.StringValue;
+                    sb.AppendLine(attributeName + " : " + attributeVal);
+                    }
+                }
+            }
+
+            //Procced 
+
+            //While all the required entries are parsed, disconnect   
+            ldapConn.Disconnect();
+
+            return sb.ToString();
         }
         private string getConfigInfo(string configItem){
             string confInfo = "";
@@ -34,10 +122,10 @@ namespace IT_Portal.Controllers
             return View();
         }
 
-        public IActionResult About()
+        [HttpGet]
+        public IActionResult About(string username, string password)
         {
-            ViewData["Message"] = "Your application description page.";
-
+            ViewData["Message"] = VerifyUser(username, password);
             return View();
         }
 
@@ -47,7 +135,6 @@ namespace IT_Portal.Controllers
             string configInfor = getConfigInfo("howto");
             DirectoryInfo d = new DirectoryInfo(@configInfor + "\\" + id);
             FileInfo[] Files = d.GetFiles("*.PDF");
-            //System.IO.Directory.GetDirectories(@configInfor,"*", System.IO.SearchOption.AllDirectories)
             string[] directories = Directory.GetDirectories(@configInfor + "\\" + id);
             string[] subFolders = new string[directories.Length];
             string[] subFolderNames = new string[directories.Length];
@@ -74,7 +161,6 @@ namespace IT_Portal.Controllers
                 {
                     if (file.LastWriteTime > destFile.LastWriteTime)
                     { 
-                        // now you can safely overwrite it
                         file.CopyTo(destFile.FullName, true);
                     }
                 } else {
@@ -86,9 +172,9 @@ namespace IT_Portal.Controllers
             ViewBag.FolderNames = subFolderNames;
             ViewBag.Length = subFolders.Length;
             for (int i = 0; i < Files.Length; i++) { 
-                html.AppendLine("<a href=\"/HowTo" + Files[i].FullName.Replace(configInfor.Remove(configInfor.Length -1), "").Replace("\\", "/") + "\" class=\"file\" target=\"_blank\"><button class=\"fileButton\"><img src=\"/images/pdf.png\"/>" + Files[i].Name.Remove(Files[i].Name.Length -4) + "</button></a>");
-                //html.AppendLine("<li><a asp-area=\"\" asp-controller=\"Home\" asp-action=\"HowTo\">How to</a></li>"); 
-                //html.AppendLine("<li><a herf=/" + directori.Replace(configInfor + "\\","") + "><button>" + directori.Replace(configInfor + "\\","") + "</button></a></li>");
+                html.AppendLine("<a href=\"/HowTo" + Files[i].FullName.Replace(configInfor.Remove(configInfor.Length -1), "")
+                .Replace("\\", "/") + "\" class=\"file\" target=\"_blank\"><button class=\"fileButton\"><img src=\"/images/pdf.png\"/>" + 
+                Files[i].Name.Remove(Files[i].Name.Length -4) + "</button></a>");
             }
             ViewBag.Files = html.ToString();
             return View();
@@ -147,19 +233,6 @@ namespace IT_Portal.Controllers
                 }
                 pickturePaths[i] = (@"/images/contact/" + fullNames[i] + ".png");
             }
-            /*StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < Files.Length; i++) {
-                sb.AppendLine("<div class=\"gridInfo\">");
-                    sb.AppendLine("<img src=\""+ pickturePaths[i] +"\" class=\"info\"/>");
-                    sb.AppendLine("<div class=\"info\">");
-                        sb.AppendLine("<h3 class=\"c\">"+ fullNames[i] +"</h3>");
-                        sb.AppendLine("<h4 class=\"c\">"+ jobTitles[i] +"</h4>");
-                        sb.AppendLine("<p class=\"c\">"+ emails[i] +"</p>");
-                        sb.AppendLine("<p class=\"c\">"+ workPhones[i] +"</p>");
-                    sb.AppendLine("</div>");
-                sb.AppendLine("</div>");
-            }
-            ViewBag.Message = sb.ToString();*/
             ViewBag.length = Files.Length;
             ViewBag.email = emails;
             ViewBag.workPhone = workPhones;
