@@ -21,54 +21,6 @@ namespace IT_Portal.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
         
-        public static string Host { get; private set; }
-        public static string BindDN { get; private set; }
-        public static string BindPassword { get; private set; }
-        public static int Port { get; private set; }
-        public static string BaseDC { get; private set; }
-        public static string CookieName { get; private set; }
-        public static bool Validate(string username, string password)
-        {
-            Host = "ksudc10.ks.mil.no";
-            BindDN = "CN=Sindre Bruberg Admin,OU=Admin-Brukere";
-            BindPassword = "Pass!000";
-            Port = 389;
-            BaseDC = "DC=ks,DC=mil,DC=no";
-            try
-            {
-                using (var conn = new LdapConnection() )
-                {
-                    conn.Connect(Host, Port);
-                    conn.Bind($"{BindDN},{BaseDC}", BindPassword);
-                    var entities =
-                        conn.Search(BaseDC,LdapConnection.SCOPE_SUB,
-                            $"(sAMAccountName={username})",
-                            new string[] { "sAMAccountName" }, false);
-                    string userDn = null;
-                    while (entities.hasMore())
-                    {
-                        var entity = entities.next();
-                        var account = entity.getAttribute("sAMAccountName");
-                        //If you need to Case insensitive, please modify the below code.
-                        if (account != null && account.StringValue == username)
-                        {
-                            userDn = entity.DN;
-                            break;
-                        }
-                    }
-                    if (string.IsNullOrWhiteSpace(userDn)) return false;
-                    conn.Bind(userDn, password);
-                    // LdapAttribute passwordAttr = new LdapAttribute("userPassword", password);
-                    // var compareResult = conn.Compare(userDn, passwordAttr);
-                    conn.Disconnect();
-                    return true;
-                }
-            }
-            catch (Exception e) {
-                Console.WriteLine(e);
-                return false;
-            }
-        }
         private static string VerifyUser(string username, string password) {
             string searchBase = "ou=KSU,dc=KS,dc=mil,dc=no";
             int searchScope = LdapConnection.SCOPE_SUB; 
