@@ -17,6 +17,25 @@ textarea {
     max-width: 280px;
 }
 
+.brukerInfo > h2 {
+    margin-bottom: 0px;
+}
+
+.brukerInfo > h3 {
+    margin-top: 0px;
+}
+
+.btn {
+    margin-top: 10px;
+}
+td {
+    padding-right: 10px;
+}
+
+.brukerInfo > em {
+    font-size: .9em;
+}
+
 .grid {
   display: -webkit-flex;
   display: flex;

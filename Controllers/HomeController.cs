@@ -29,7 +29,7 @@ namespace IT_Portal.Controllers
             ldapConn.Connect("ks.mil.no",389);
             ldapConn.Bind("ks\\" + username,password);
             Console.WriteLine(ldapConn.Connected);
-            string[] attr = {"sAMAccountName", "mail", "displayName", "department", "userPrincipalName", "description", "title"};
+            string[] attr = {"sAMAccountName", "mail", "displayName", "department", "userPrincipalName", "title"};
             LdapSearchQueue queue=ldapConn.Search (searchBase,searchScope, searchFilter, attr,false,(LdapSearchQueue)null,(LdapSearchConstraints)null );
             LdapMessage message;
             StringBuilder sb = new StringBuilder();
@@ -47,7 +47,7 @@ namespace IT_Portal.Controllers
                     LdapAttribute attribute=(LdapAttribute)ienum.Current;
                     string attributeName = attribute.Name;
                     string attributeVal = attribute.StringValue;
-                    sb.AppendLine(attributeName + " : " + attributeVal);
+                    sb.AppendLine(attributeName + ": " + attributeVal);
                     }
                 }
             }
@@ -74,10 +74,25 @@ namespace IT_Portal.Controllers
             return View();
         }
 
-        [HttpGet]
-        public IActionResult About(string username, string password)
-        {
-            ViewData["Message"] = VerifyUser(username, password);
+        [HttpPost]
+        public IActionResult BrukerInfo(string username, string password)
+        {            
+            List<string> brukerInfos = new List<string>(VerifyUser(username, password).Split(new string[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries));
+            foreach (string brukerInfo in brukerInfos) {
+                if (brukerInfo.StartsWith("sAMAccountName")) {
+                    ViewData["sAMAccountName"] = brukerInfo.Replace("sAMAccountName: ", "");
+                }else if (brukerInfo.StartsWith("mail")) {
+                    ViewData["mail"] = brukerInfo.Replace("mail: ", "");
+                }else if (brukerInfo.StartsWith("displayName")) {
+                    ViewData["Title"] = brukerInfo.Replace("displayName: ", "");
+                }else if (brukerInfo.StartsWith("department")) {
+                    ViewData["department"] = brukerInfo.Replace("department: ", "");
+                }else if (brukerInfo.StartsWith("userPrincipalName")) {
+                    ViewData["userPrincipalName"] = brukerInfo.Replace("userPrincipalName: ", "");
+                }else if (brukerInfo.StartsWith("title")) {
+                    ViewData["userTitle"] = brukerInfo.Replace("title: ", "");
+                } 
+            }
             return View();
         }
 

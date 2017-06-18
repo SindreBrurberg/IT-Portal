@@ -1,7 +1,14 @@
-﻿@{
-    ViewData["Title"] = "Krigsskolen";
-}
-<h2>@ViewData["Title"]</h2>
+﻿<div class="brukerInfo">
+    <h2>@ViewData["Title"]</h2>
+    <h3>@ViewData["userTitle"]</h3>
+    <table>
+        <tr><td>Avdeling: </td><td>@ViewData["department"]</td></tr>
+        <tr><td>Mail, denne deler du ut: </td><td>@ViewData["mail"]</td></tr>
+        <tr><td>Brukernavn: </td><td>@ViewData["sAMAccountName"]</td></tr>
+        <tr><td>Brukernavn for It'slearning og Office 365: </td><td>@ViewData["userPrincipalName"]</td></tr>
+    </table>
+    <em>*Venligst informer IT hvis du ønsker endringer eller noe ikke er korekt</em>
+</div>
 
 <form asp-controller="Home" asp-action="BrukerInfo" method="post">
    <fieldset class="form-horizontal">
